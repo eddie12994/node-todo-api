@@ -22,18 +22,8 @@ todoApp.post('/todos', (request, response) => {
   });
 });
 
-// todoApp.post('/anotherTodo', (request, response) => {
-//   var anotherTodo = new Todo({
-//     text: request.body.text
-//   });
-//
-//   todo.save().then((doc) => {
-//     response.send(doc);
-//   }, (err) => {
-//     response.status(400).send(err);
-//   });
-// });
-
 todoApp.listen(3000, () => {
   console.log('Started server on port 3000');
 });
+
+module.exports = {todoApp};
