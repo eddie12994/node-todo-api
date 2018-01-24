@@ -63,7 +63,7 @@ todoApp.delete('/todos/:id', (request, response) => {
       return response.status(404).send();
     }
 
-    response.status(200).send(todo);
+    response.status(200).send({todo: todo});
   }, (error) => {
     response.status(400).send();
   });
