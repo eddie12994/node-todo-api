@@ -51,6 +51,24 @@ todoApp.get('/todos/:id', (request, response) => {
   });
 });
 
+todoApp.delete('/todos/:id', (request, response) => {
+  var id = request.params.id;
+
+  if(!ObjectID.isValid(id)){
+    return response.status(404).send();
+  }
+
+  Todo.findByIdAndRemove(id).then((todo) => {
+    if(!todo){
+      return response.status(404).send();
+    }
+
+    response.status(200).send(todo);
+  }, (error) => {
+    response.status(400).send();
+  });
+});
+
 todoApp.listen(port, () => {
   console.log(`Started server on ${port}`);
 });
