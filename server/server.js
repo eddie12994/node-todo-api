@@ -8,6 +8,7 @@ const {ObjectID} = require('mongodb');
 var {mongoose} = require('./db/mongoose.js');
 var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
+var {authenticate} = require('./middleware/authenticate.js');
 
 var todoApp = express();
 var port = process.env.PORT;
@@ -111,6 +112,10 @@ todoApp.post('/users', (request, response) => {
     response.status(400).send();
   });
 
+});
+
+todoApp.get('/users/me', authenticate, (request, response) => {
+  response.send(request.user);
 });
 
 todoApp.listen(port, () => {
