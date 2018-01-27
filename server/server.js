@@ -1,3 +1,5 @@
+require('./config/config.js');
+
 const _ = require('lodash');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -8,7 +10,7 @@ var {Todo} = require('./models/todo');
 var {User} = require('./models/user');
 
 var todoApp = express();
-var port = process.env.PORT || 3000;
+var port = process.env.PORT;
 
 todoApp.use(bodyParser.json());
 
@@ -94,6 +96,21 @@ todoApp.patch('/todos/:id', (request, response) => {
   }).catch((error) => {
     response.status(400).send();
   });
+});
+
+todoApp.post('/users', (request, response) => {
+  var body = _.pick(request.body, ['email', 'password']);
+  var user = new User(body);
+
+  user.save().then(() => {
+    // response.send(user);
+    return user.generateAuthToken();
+  }).then((token) => {
+    response.header('x-auth', token).send(user);
+  }).catch((error) => {
+    response.status(400).send();
+  });
+
 });
 
 todoApp.listen(port, () => {
