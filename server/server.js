@@ -118,6 +118,20 @@ todoApp.get('/users/me', authenticate, (request, response) => {
   response.send(request.user);
 });
 
+todoApp.post('/users/login', (request, response) => {
+  var body = _.pick(request.body, ['email', 'password']);
+
+  User.findByCredentials(body.email, body.password).then((user) => {
+    // response.send(user);
+    return User.generateAuthToken().then((token) => {
+      response.header('x-auth', token).send(user);
+    });
+  }).catch((error) => {
+    response.status(400).send();
+  });
+  // response.send(body);
+});
+
 todoApp.listen(port, () => {
   console.log(`Started server on ${port}`);
 });
