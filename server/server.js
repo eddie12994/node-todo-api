@@ -123,13 +123,21 @@ todoApp.post('/users/login', (request, response) => {
 
   User.findByCredentials(body.email, body.password).then((user) => {
     // response.send(user);
-    return User.generateAuthToken().then((token) => {
+    return user.generateAuthToken().then((token) => {
       response.header('x-auth', token).send(user);
     });
   }).catch((error) => {
     response.status(400).send();
   });
   // response.send(body);
+});
+
+todoApp.delete('/users/me/login', authenticate, (request, response) => {
+  request.user.removeToken(request.token).then(() => {
+    response.status(200).send();
+  }, () => {
+    response.status(400).send();
+  });
 });
 
 todoApp.listen(port, () => {
