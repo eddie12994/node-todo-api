@@ -15,10 +15,11 @@ var port = process.env.PORT;
 
 todoApp.use(bodyParser.json());
 
-todoApp.post('/todos', (request, response) => {
+todoApp.post('/todos', authenticate, (request, response) => {
   // console.log(request.body);
   var todo = new Todo({
-    text: request.body.text
+    text: request.body.text,
+    _creator: request.user._id
   });
 
   todo.save().then((doc) => {
@@ -28,15 +29,17 @@ todoApp.post('/todos', (request, response) => {
   });
 });
 
-todoApp.get('/todos', (request, response) => {
-  Todo.find().then((todos) => {
+todoApp.get('/todos', authenticate, (request, response) => {
+  Todo.find({
+    _creator: request.user._id
+  }).then((todos) => {
     response.send({todos});
   }, (error) => {
     response.status(400).send(error);
   });
 });
 
-todoApp.get('/todos/:id', (request, response) => {
+todoApp.get('/todos/:id', authenticate, (request, response) => {
   // response.send(request.params);
   var id = request.params.id;
 
@@ -44,7 +47,10 @@ todoApp.get('/todos/:id', (request, response) => {
     return response.status(404).send();
   }
 
-  Todo.findById(id).then((todo) => {
+  Todo.findOne({
+    _id: id,
+    _creator: request.user._id
+  }).then((todo) => {
     if(!todo){
       return response.status(404).send();
     }
@@ -55,14 +61,17 @@ todoApp.get('/todos/:id', (request, response) => {
   });
 });
 
-todoApp.delete('/todos/:id', (request, response) => {
+todoApp.delete('/todos/:id', authenticate, (request, response) => {
   var id = request.params.id;
 
   if(!ObjectID.isValid(id)){
     return response.status(404).send();
   }
 
-  Todo.findByIdAndRemove(id).then((todo) => {
+  Todo.findOneAndRemove({
+    _id: id,
+    _creator: request.user._id
+  }).then((todo) => {
     if(!todo){
       return response.status(404).send();
     }
@@ -73,7 +82,7 @@ todoApp.delete('/todos/:id', (request, response) => {
   });
 });
 
-todoApp.patch('/todos/:id', (request, response) => {
+todoApp.patch('/todos/:id', authenticate, (request, response) => {
   var id = request.params.id;
   var body = _.pick(request.body, ['text', 'completed']);
 
@@ -88,7 +97,10 @@ todoApp.patch('/todos/:id', (request, response) => {
     body.completedAt = null;
   }
 
-  Todo.findByIdAndUpdate(id, {$set: body}, {new: true}).then((todo) => {
+  Todo.findOneAndUpdate({
+    _id: id,
+    _creator: request.user._id
+  }, {$set: body}, {new: true}).then((todo) => {
     if(!todo){
       return response.status(404).send();
     }
@@ -132,7 +144,7 @@ todoApp.post('/users/login', (request, response) => {
   // response.send(body);
 });
 
-todoApp.delete('/users/me/login', authenticate, (request, response) => {
+todoApp.delete('/users/me/token', authenticate, (request, response) => {
   request.user.removeToken(request.token).then(() => {
     response.status(200).send();
   }, () => {
